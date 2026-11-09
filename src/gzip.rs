@@ -30,8 +30,8 @@ pub fn crc32(data: &[u8]) -> u32 {
         t
     });
     let mut c = !0u32;
-    let mut chunks = data.chunks_exact(8);
-    for b in &mut chunks {
+    let (chunks, rest) = data.as_chunks::<8>();
+    for b in chunks {
         let lo = c ^ u32::from_le_bytes([b[0], b[1], b[2], b[3]]);
         let hi = u32::from_le_bytes([b[4], b[5], b[6], b[7]]);
         c = t[7][(lo & 0xFF) as usize]
@@ -43,7 +43,7 @@ pub fn crc32(data: &[u8]) -> u32 {
             ^ t[1][((hi >> 16) & 0xFF) as usize]
             ^ t[0][(hi >> 24) as usize];
     }
-    for &b in chunks.remainder() {
+    for &b in rest {
         c = t[0][((c ^ b as u32) & 0xFF) as usize] ^ (c >> 8);
     }
     !c

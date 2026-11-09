@@ -28,9 +28,9 @@ pub fn limited_lengths(freqs: &[u32], max_len: u32) -> Vec<u8> {
     let mut list = leaf_items.clone();
     for _ in 1..max_len {
         let mut packages = Vec::with_capacity(list.len() / 2);
-        for pair in list.chunks_exact(2) {
-            nodes.push(Node::Pair(pair[0].1, pair[1].1));
-            packages.push((pair[0].0 + pair[1].0, nodes.len() - 1));
+        for [a, b] in list.as_chunks::<2>().0 {
+            nodes.push(Node::Pair(a.1, b.1));
+            packages.push((a.0 + b.0, nodes.len() - 1));
         }
         // fusion de deux listes triées
         let mut merged = Vec::with_capacity(leaf_items.len() + packages.len());
@@ -110,8 +110,8 @@ impl Decoder {
         count[0] = 0;
         // le code ne doit pas être « trop plein » (inégalité de Kraft)
         let mut left: i64 = 1;
-        for len in 1..16 {
-            left = left * 2 - count[len] as i64;
+        for &n in &count[1..] {
+            left = left * 2 - n as i64;
             if left < 0 {
                 return Err("code de Huffman sur-souscrit");
             }
